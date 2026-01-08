@@ -32,44 +32,41 @@ function calculateInvestment(data: InvestmentData): CalculatedInvestments {
 		return 'Whoops! No valid amount of years provided.';
 	}
 
-	const result: Results[] = [];
+	let total = initialAmount;
+	let totalContributions = 0;
+	let totalInterestEarned = 0;
 
-	result[0] = {
-		year: 0,
-		value: initialAmount * (1 + expectedReturn / 100),
-		totalContributions: 10,
-		totalInterestEarned:
-			initialAmount * (1 + expectedReturn / 100) -
-			initialAmount,
-	};
+	const results: Results[] = [];
 
-	let contributions: number = annualContribution;
-	let earned: number =
-		initialAmount * (1 + expectedReturn / 100) - initialAmount;
+	const rate = expectedReturn / 100;
 
-	for (let i = 1; i <= duration; i++) {
-		const { value } = result[i - 1];
-
-		const rate = expectedReturn / 100;
-
-		const withAnnual = value + annualContribution;
-		const withReturn = withAnnual * (1 + rate);
-
-		contributions += annualContribution;
-		earned = withReturn - (contributions - 10) - initialAmount;
+	for (let i = 0; i < duration; i++) {
+		total = total * (1 + rate);
+		totalInterestEarned =
+			total - totalContributions - initialAmount;
+		totalContributions = totalContributions + annualContribution;
+		total = total + annualContribution;
 
 		const nextYearsReturn: Results = {
 			year: i,
-			value: withReturn,
-			totalContributions: contributions,
-			totalInterestEarned: earned,
+			value: total,
+			totalContributions,
+			totalInterestEarned,
 		};
 
-		result.push(nextYearsReturn);
+		results.push(nextYearsReturn);
 	}
 
-	return result;
+	return results;
 } // => result[]
+
+function printResults(results: CalculatedInvestments): void {
+	if (typeof results === 'string') {
+		return console.log(results);
+	}
+
+	results.forEach((item) => console.log(item));
+}
 
 let myData: InvestmentData = {
 	initialAmount: 100,
@@ -79,13 +76,5 @@ let myData: InvestmentData = {
 };
 
 const results = calculateInvestment(myData);
-
-function printResults(results: CalculatedInvestments[]): void {
-	if (typeof results === 'string') {
-		return console.log(results);
-	}
-
-	results.forEach((item) => console.log(item));
-}
 
 printResults(results);
